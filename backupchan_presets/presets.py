@@ -78,3 +78,6 @@ class Presets:
 
     def __iter__(self):
         return iter(self.presets.keys())
+
+    def __len__(self):
+        return len(self.presets)

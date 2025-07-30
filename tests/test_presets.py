@@ -40,3 +40,8 @@ def test_iterate():
     for preset_name in presets:
         assert preset_name == "testing"
         break
+
+def test_len():
+    presets = Presets()
+    presets.add("", "", "")
+    assert len(presets) == 1

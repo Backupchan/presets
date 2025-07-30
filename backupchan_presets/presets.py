@@ -75,3 +75,6 @@ class Presets:
 
     def __getitem__(self, name: str) -> Preset:
         return self.presets[name]
+
+    def __iter__(self):
+        return iter(self.presets.keys())

@@ -33,3 +33,10 @@ def test_load(tmp_path):
     new_presets = Presets(str(config_path))
     new_presets.load()
     assert new_presets["testing"] == presets["testing"]
+
+def test_iterate():
+    presets = Presets()
+    presets.add("testing", "/a", "aaa")
+    for preset_name in presets:
+        assert preset_name == "testing"
+        break

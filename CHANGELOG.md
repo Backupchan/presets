@@ -2,6 +2,10 @@
 
 See what's changed between versions!
 
+## 0.1.3
+
+* Upload function now returns the ID of the job currently processing the upload.
+
 ## 0.1.2
 
 * `Presets` length can now be queried using `len(presets)`.

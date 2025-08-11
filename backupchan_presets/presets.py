@@ -16,7 +16,7 @@ class Preset:
     location: str
     target_id: str
 
-    def upload(self, api: API, manual: bool):
+    def upload(self, api: API, manual: bool) -> str:
         if not os.path.exists(self.location):
             raise PresetError(f"No such file or directory: {self.location}")
 
@@ -24,7 +24,7 @@ class Preset:
             api.upload_backup_folder(self.target_id, self.location, manual)
         else:
             with open(self.location, "rb") as file:
-                api.upload_backup(self.target_id, file, os.path.basename(self.location), manual)
+                return api.upload_backup(self.target_id, file, os.path.basename(self.location), manual)
 
     @staticmethod
     def from_dict(d: dict) -> "Preset":

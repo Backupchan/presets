@@ -21,7 +21,7 @@ class Preset:
             raise PresetError(f"No such file or directory: {self.location}")
 
         if os.path.isdir(self.location):
-            api.upload_backup_folder(self.target_id, self.location, manual)
+            return api.upload_backup_folder(self.target_id, self.location, manual)
         else:
             with open(self.location, "rb") as file:
                 return api.upload_backup(self.target_id, file, os.path.basename(self.location), manual)

@@ -2,6 +2,10 @@
 
 See what's changed between versions!
 
+## 0.2.0
+
+* Added support for sequential uploads.
+
 ## 0.1.4
 
 * Fixed not returning job ID when uploading folder.

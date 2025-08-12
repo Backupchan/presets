@@ -1,6 +1,7 @@
-from backupchan import API
+from backupchan import API, BackupchanAPIError, SequentialFile
 from dataclasses import dataclass, asdict
 from pathlib import Path
+from typing import Generator
 import os
 import json
 import platformdirs
@@ -17,14 +18,50 @@ class Preset:
     target_id: str
 
     def upload(self, api: API, manual: bool) -> str:
-        if not os.path.exists(self.location):
-            raise PresetError(f"No such file or directory: {self.location}")
+        self.check_existence()
 
         if os.path.isdir(self.location):
             return api.upload_backup_folder(self.target_id, self.location, manual)
         else:
             with open(self.location, "rb") as file:
                 return api.upload_backup(self.target_id, file, os.path.basename(self.location), manual)
+
+    def seq_upload(self, api: API, manual: bool) -> Generator[tuple[int, int, str], None, None]:
+        """
+        Generates (current index), (total files), (current filename)
+        """
+
+        self.check_existence()
+
+        if not os.path.isdir(self.location):
+            raise PresetError("Cannot upload single file sequentially")
+
+        # Build a file list
+        # TODO copied from cli; put into function probably in client lib
+        file_list = []
+        for dirpath, _, filenames in os.walk(self.location):
+            rel_dir = os.path.relpath(dirpath, self.location)
+            rel_dir = "/" if rel_dir == "." else "/" + rel_dir
+            for filename in filenames:
+                file_list.append(SequentialFile(rel_dir, filename, False))
+        total_files = len(file_list)
+
+        try:
+            api.seq_begin(self.target_id, file_list, manual)
+        except BackupchanAPIError as exc:
+            if not (exc.status_code == 400 and "Target busy" in str(exc)):
+                raise
+        
+        for index, file in enumerate(file_list):
+            full_path = os.path.join(file.path, file.name)
+            yield index, total_files, full_path
+            with open(os.path.join(self.location, full_path.lstrip("/")), "rb") as file_io:
+                api.seq_upload(self.target_id, file_io, file)
+        api.seq_finish(self.target_id)
+
+    def check_existence(self):
+        if not os.path.exists(self.location):
+            raise PresetError(f"No such file or directory: {self.location}")
 
     @staticmethod
     def from_dict(d: dict) -> "Preset":

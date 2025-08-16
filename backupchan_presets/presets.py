@@ -51,6 +51,12 @@ class Preset:
         except BackupchanAPIError as exc:
             if not (exc.status_code == 400 and "Target busy" in str(exc)):
                 raise
+
+            # exclude already uploaded files
+            server_file_list = api.seq_check(self.target_id)
+            already_uploaded = [file for file in server_file_list if file.uploaded]
+            file_list = [file for file in file_list if SequentialFile(file.path, file.name, True) not in already_uploaded]
+            total_files = len(file_list)
         
         for index, file in enumerate(file_list):
             full_path = os.path.join(file.path, file.name)

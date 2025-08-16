@@ -2,6 +2,10 @@
 
 See what's changed between versions!
 
+## 0.2.1
+
+* Added continuing interrupted sequential uploads.
+
 ## 0.2.0
 
 * Added support for sequential uploads.

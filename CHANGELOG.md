@@ -2,6 +2,10 @@
 
 See what's changed between versions!
 
+## 0.2.2
+
+* Added ability to check if there is a preset.
+
 ## 0.2.1
 
 * Added continuing interrupted sequential uploads.

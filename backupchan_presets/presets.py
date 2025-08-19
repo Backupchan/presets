@@ -124,3 +124,6 @@ class Presets:
 
     def __len__(self):
         return len(self.presets)
+
+    def __contains__(self, name: str) -> bool:
+        return name in self.presets

@@ -116,6 +116,14 @@ class Presets:
     def remove(self, name: str):
         del self.presets[name]
 
+    def rename(self, old_name: str, new_name: str):
+        if old_name not in self.presets:
+            raise PresetError(f"Preset '{old_name}' does not exist")
+        if new_name in self.presets:
+            raise PresetError(f"Preset '{new_name}' already exists")
+
+        self.presets[new_name] = self.presets.pop(old_name)
+
     def __getitem__(self, name: str) -> Preset:
         return self.presets[name]
 

@@ -1,6 +1,6 @@
 [project]
 name = "backupchan-presets"
-version = "0.2.2"
+version = "0.3.0"
 description = "Presets library for Backup-chan."
 authors = [
     { name="Moltony", email="koronavirusnyj@gmail.com" } # but I probably won't respond...

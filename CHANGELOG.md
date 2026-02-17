@@ -2,6 +2,10 @@
 
 See what's changed between versions!
 
+## 0.3.0
+
+* Added function to rename a preset.
+
 ## 0.2.2
 
 * Added ability to check if there is a preset.

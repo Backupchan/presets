@@ -5,9 +5,13 @@ from typing import Generator
 import os
 import json
 import platformdirs
+import fnmatch
 
 CONFIG_FILE_DIR = platformdirs.user_config_dir("backupchan")
 CONFIG_FILE_PATH = f"{CONFIG_FILE_DIR}/presets.json"
+
+def fnmatch_any(filename: str, patterns: list[str]) -> bool:
+    return any(fnmatch.fnmatch(filename, pattern) for pattern in patterns)
 
 class PresetError(Exception):
     pass
@@ -16,6 +20,8 @@ class PresetError(Exception):
 class Preset:
     location: str
     target_id: str
+    exclude: list[str] | None
+    include: list[str] | None
 
     def upload(self, api: API, manual: bool) -> str:
         self.check_existence()
@@ -31,7 +37,7 @@ class Preset:
         Generates (current index), (total files), (current filename)
         """
 
-        self.check_existence()
+        self.validate()
 
         if not os.path.isdir(self.location):
             raise PresetError("Cannot upload single file sequentially")
@@ -43,6 +49,11 @@ class Preset:
             rel_dir = os.path.relpath(dirpath, self.location)
             rel_dir = "/" if rel_dir == "." else "/" + rel_dir
             for filename in filenames:
+                file_path = os.path.join(rel_dir, filename)
+                if self.exclude and fnmatch_any(file_path, self.exclude):
+                    continue
+                elif self.include and not fnmatch_any(file_path, self.include):
+                    continue
                 file_list.append(SequentialFile(rel_dir, filename, False))
         total_files = len(file_list)
 
@@ -65,13 +76,16 @@ class Preset:
                 api.seq_upload(self.target_id, file_io, file)
         api.seq_finish(self.target_id)
 
-    def check_existence(self):
+    def validate(self):
         if not os.path.exists(self.location):
             raise PresetError(f"No such file or directory: {self.location}")
 
+        if self.exclude and self.include:
+            raise PresetError("Exclude and include patterns cannot be used together")
+
     @staticmethod
     def from_dict(d: dict) -> "Preset":
-        return Preset(d["location"], d["target_id"])
+        return Preset(d["location"], d["target_id"], d.get("exclude", None), d.get("include", None))
 
 class Presets:
     def __init__(self, config_path: str | None = None):
@@ -94,11 +108,20 @@ class Presets:
         presets_list = []
 
         for name, preset in self.presets.items():
-            presets_list.append({
+            preset_dict = {
                 "name": name,
                 "location": preset.location,
                 "target_id": preset.target_id
-            })
+            }
+            if preset.exclude:
+                preset_dict |= {
+                    "exclude": preset.exclude
+                }
+            elif preset.include:
+                preset_dict |= {
+                    "include": preset.include
+                }
+            presets_list.append(preset_dict)
 
         presets_dict = {
             "presets": presets_list
@@ -107,11 +130,14 @@ class Presets:
         with open(self.config_path, "w") as config_file:
             json.dump(presets_dict, config_file)
 
-    def add(self, name: str, location: str, target_id: str):
+    def add(self, name: str, location: str, target_id: str, exclude: list[str] | None = None, include: list[str] | None = None):
         if name in self.presets:
             raise PresetError(f"Preset '{name}' already exists")
 
-        self.presets[name] = Preset(location, target_id)
+        if exclude and include:
+            raise PresetError("Exclude and include patterns cannot be used together")
+
+        self.presets[name] = Preset(location, target_id, exclude, include)
 
     def remove(self, name: str):
         del self.presets[name]

@@ -2,6 +2,10 @@
 
 See what's changed between versions!
 
+## 0.4.0
+
+* Added include and exclude patterns for sequential uploads.
+
 ## 0.3.0
 
 * Added function to rename a preset.

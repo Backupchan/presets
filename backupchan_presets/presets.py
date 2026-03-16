@@ -24,7 +24,7 @@ class Preset:
     include: list[str] | None
 
     def upload(self, api: API, manual: bool) -> str:
-        self.check_existence()
+        self.validate()
 
         if os.path.isdir(self.location):
             return api.upload_backup_folder(self.target_id, self.location, manual)

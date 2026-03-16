@@ -2,6 +2,10 @@
 
 See what's changed between versions!
 
+## 0.4.1
+
+* Fixed not working.
+
 ## 0.4.0
 
 * Added include and exclude patterns for sequential uploads.
